@@ -321,6 +321,7 @@ select.form-control option { background:var(--navy2); color:var(--text); }
 .icd-code { font-size:13px; font-weight:700; color:var(--gold); margin-bottom:3px; font-family:monospace; }
 .icd-name { font-size:13px; color:var(--text); margin-bottom:3px; }
 .icd-cat  { font-size:10px; color:var(--muted); }
+.icd-inc  { font-size:11px; color:var(--muted); margin:3px 0; font-style:italic; }
 
 /* ── Modal ── */
 .modal-overlay {
@@ -895,83 +896,111 @@ function renderProph(filter='') {
 renderProph();
 function filterProph(v) { renderProph(v); }
 
-// ══════════ ICD-10 DATA ══════════
-const ICD = [
-  // Herz & Kreislauf — inkl. Herzinfarkt
-  { code:'I21.0', name:'Akuter transmuraler Myokardinfarkt der Vorderwand (Herzinfarkt)', cat:'Herz', syn:'herzinfarkt myokardinfarkt vorderwand infarkt' },
-  { code:'I21.1', name:'Akuter transmuraler Myokardinfarkt der Hinterwand (Herzinfarkt)', cat:'Herz', syn:'herzinfarkt myokardinfarkt hinterwand infarkt' },
-  { code:'I21.2', name:'Akuter transmuraler Myokardinfarkt sonstiger Lokalisationen (Herzinfarkt)', cat:'Herz', syn:'herzinfarkt myokardinfarkt infarkt' },
-  { code:'I21.4', name:'Akuter subendokardialer Myokardinfarkt (NSTEMI)', cat:'Herz', syn:'herzinfarkt nstemi myokardinfarkt infarkt' },
-  { code:'I21.9', name:'Akuter Myokardinfarkt, nicht näher bezeichnet (Herzinfarkt)', cat:'Herz', syn:'herzinfarkt myokardinfarkt infarkt' },
-  { code:'I22.0', name:'Rezidivierender Myokardinfarkt der Vorderwand (Herzinfarkt)', cat:'Herz', syn:'herzinfarkt rezidiv infarkt' },
-  { code:'I22.9', name:'Rezidivierender Myokardinfarkt, nicht näher bezeichnet', cat:'Herz', syn:'herzinfarkt rezidiv infarkt' },
-  { code:'I10',   name:'Essentielle (primäre) Hypertonie (Bluthochdruck)', cat:'Herz', syn:'bluthochdruck hypertonie herz' },
-  { code:'I11.0', name:'Hypertensive Herzkrankheit mit Herzinsuffizienz', cat:'Herz', syn:'herz herzinsuffizienz hypertonie' },
-  { code:'I25.0', name:'Atherosklerotische Herzkrankheit', cat:'Herz', syn:'herz koronare kHK arteriosklerose' },
-  { code:'I50.0', name:'Stauungsinsuffizienz des Herzens (Herzinsuffizienz)', cat:'Herz', syn:'herzinsuffizienz herzschwäche herz' },
-  { code:'I48.0', name:'Paroxysmales Vorhofflimmern', cat:'Herz', syn:'herzrhythmus vorhofflimmern herz' },
-  { code:'I48.2', name:'Chronisches Vorhofflimmern', cat:'Herz', syn:'herzrhythmus vorhofflimmern herz chronisch' },
-  { code:'I35.0', name:'Aortenklappenstenose (Herzklappenfehler)', cat:'Herz', syn:'herzklappe herzklappenfehler herz' },
-  { code:'I42.0', name:'Dilatative Kardiomyopathie (Herzkrankheit)', cat:'Herz', syn:'herzmuskel kardiomyopathie herzkrankheit' },
-  { code:'I63.9', name:'Hirninfarkt, nicht näher bezeichnet (Schlaganfall)', cat:'Neurologie', syn:'schlaganfall hirninfarkt apoplex' },
-  // Psychisch
-  { code:'F00.0', name:'Demenz bei Alzheimer-Krankheit, frühzeitig beginnend', cat:'Psychisch', syn:'demenz alzheimer' },
-  { code:'F00.1', name:'Demenz bei Alzheimer-Krankheit, spät beginnend', cat:'Psychisch', syn:'demenz alzheimer' },
-  { code:'F01.0', name:'Vaskuläre Demenz mit akutem Beginn', cat:'Psychisch', syn:'demenz vaskulär gefäß' },
-  { code:'F03',   name:'Nicht näher bezeichnete Demenz', cat:'Psychisch', syn:'demenz' },
-  { code:'F32.0', name:'Leichte depressive Episode', cat:'Psychisch', syn:'depression depressiv' },
-  { code:'F32.1', name:'Mittelgradige depressive Episode', cat:'Psychisch', syn:'depression depressiv' },
-  // Nervensystem
-  { code:'G20',   name:'Primäres Parkinson-Syndrom', cat:'Neurologie', syn:'parkinson' },
-  { code:'G35',   name:'Multiple Sklerose', cat:'Neurologie', syn:'ms multiple sklerose' },
-  // Lunge
-  { code:'J44.0', name:'COPD mit akuter Infektion der unteren Atemwege', cat:'Lunge', syn:'copd lungenerkrankung atemweg' },
-  { code:'J18.9', name:'Pneumonie, nicht näher bezeichnet (Lungenentzündung)', cat:'Lunge', syn:'pneumonie lungenentzündung lunge' },
-  { code:'J96.0', name:'Akute respiratorische Insuffizienz (Atemversagen)', cat:'Lunge', syn:'atemversagen ateminsuffizienz lunge' },
-  // Bewegungsapparat
-  { code:'M10.0', name:'Idiopathische Gicht', cat:'Bewegungsapparat', syn:'gicht gelenk' },
-  { code:'M15',   name:'Primäre Polyarthrose', cat:'Bewegungsapparat', syn:'arthrose gelenk' },
-  { code:'M54.5', name:'Kreuzschmerzen', cat:'Bewegungsapparat', syn:'kreuzschmerz rücken wirbelsäule' },
-  { code:'M81.0', name:'Postmenopausale Osteoporose', cat:'Bewegungsapparat', syn:'osteoporose knochen' },
-  { code:'M16.0', name:'Primäre Koxarthrose (Hüftgelenksarthrose)', cat:'Bewegungsapparat', syn:'hüfte arthrose coxarthrose gelenk' },
-  { code:'M17.0', name:'Primäre Gonarthrose (Kniegelenksarthrose)', cat:'Bewegungsapparat', syn:'knie arthrose gelenk' },
-  // Urogenital
-  { code:'N39.0', name:'Harnwegsinfektion, nicht näher bezeichnet (Blasenentzündung)', cat:'Urogenital', syn:'harnwegsinfektion blasenentzündung zystitis harnweg' },
-  { code:'N40',   name:'Benigne Prostatahyperplasie', cat:'Urogenital', syn:'prostata bph' },
-  // Haut
-  { code:'L89.0', name:'Dekubitalgeschwür, Grad I (nicht wegdrückbare Rötung)', cat:'Haut', syn:'dekubitus druckgeschwür wunde' },
-  { code:'L89.1', name:'Dekubitalgeschwür, Grad II (Blasenbildung / oberflächlich)', cat:'Haut', syn:'dekubitus druckgeschwür wunde' },
-  { code:'L89.2', name:'Dekubitalgeschwür, Grad III (Vollhautverlust)', cat:'Haut', syn:'dekubitus druckgeschwür wunde' },
-  { code:'L89.3', name:'Dekubitalgeschwür, Grad IV (bis auf Knochen/Muskel)', cat:'Haut', syn:'dekubitus druckgeschwür wunde' },
-  // Stoffwechsel
-  { code:'E11.9', name:'Diabetes mellitus Typ 2 ohne Komplikationen', cat:'Stoffwechsel', syn:'diabetes zucker' },
-  { code:'E11.5', name:'Diabetes mellitus Typ 2 mit peripherer Gefäßkrankheit', cat:'Stoffwechsel', syn:'diabetes zucker gefäß' },
-  { code:'E66.0', name:'Alimentäre Adipositas (Übergewicht)', cat:'Stoffwechsel', syn:'übergewicht adipositas fettleibigkeit' },
-  // Pflegebezogen
-  { code:'Z74.0', name:'Bettlägerigkeit', cat:'Pflegebezogen', syn:'bettlägerig immobil' },
-  { code:'Z74.1', name:'Hilfsbedürftigkeit bei Körperpflege', cat:'Pflegebezogen', syn:'körperpflege hilfsbedürftig' },
-  { code:'Z74.2', name:'Hilfsbedürftigkeit im Haushalt', cat:'Pflegebezogen', syn:'haushalt hilfsbedürftig' },
-  { code:'Z74.3', name:'Dauernde Pflegebedürftigkeit', cat:'Pflegebezogen', syn:'pflegebedürftig pflege' },
-  // Verletzungen
-  { code:'S72.0', name:'Schenkelhalsfraktur (Oberschenkelhalsbruch)', cat:'Verletzungen', syn:'schenkelhalsfraktur hüftfraktur knochenbruch bruch' },
-  { code:'S72.1', name:'Pertrochantäre Fraktur (Oberschenkelbruch)', cat:'Verletzungen', syn:'fraktur bruch knochen' },
-];
+// ══════════ ICD-10 SUCHE (ICD-10-GM 2026 · 12.334 Codes via GitHub) ══════════
+const ICD_BASE = 'https://kragnarsson92.github.io/pflege-assistent/icd_json/';
+const ICD_CACHE = {};      // geladene Kapitel { 'I': [...codes], ... }
+const ICD_LOADING = {};    // laufende Fetches
+
+// Laiensprache → Kapitel-Buchstaben (mehrere möglich)
+const LAIEN_MAP = {
+  'herzinfarkt':'I','infarkt':'I','herzattacke':'I','herzstillstand':'I',
+  'herzinsuffizienz':'I','herzschwäche':'I','bluthochdruck':'I','hypertonie':'I',
+  'vorhofflimmern':'I','schlaganfall':'I','apoplex':'I','arteriosklerose':'I',
+  'krampfader':'I','thrombose':'I','embolie':'I','angina pectoris':'I',
+  'demenz':'F','alzheimer':'F','vergesslichkeit':'F','depression':'F',
+  'angststörung':'F','sucht':'F','alkohol':'F','psychose':'F','schizophrenie':'F',
+  'parkinson':'G','epilepsie':'G','ms':'G','multiple sklerose':'G',
+  'migräne':'G','neuropathie':'G','lähmung':'G',
+  'diabetes':'E','zucker':'E','schilddrüse':'E','adipositas':'E','übergewicht':'E',
+  'lipödem':'E','lymphödem':'I','osteoporose':'M',
+  'lungenentzündung':'J','pneumonie':'J','copd':'J','asthma':'J','bronchitis':'J',
+  'grippe':'J','erkältung':'J',
+  'dekubitus':'L','druckgeschwür':'L','wunde':'L','intertrigo':'L',
+  'arthrose':'M','arthritis':'M','rückenschmerzen':'M','fraktur':'S',
+  'knochenbruch':'S','hüfte':'M','knie':'M','schulter':'M',
+  'blasenentzündung':'N','harnwegsinfekt':'N','inkontinenz':'N','niere':'N','prostata':'N',
+  'magen':'K','darm':'K','verstopfung':'K','durchfall':'K','magengeschwür':'K',
+  'tumor':'C','krebs':'C','karzinom':'C','metastasen':'C',
+  'anämie':'D','blutarmut':'D',
+  'sturz':'S','pflegebedürftig':'Z','pflegegrad':'Z','bettlägerig':'Z',
+  'schluckstörung':'R','dysphagie':'R','schmerz':'R',
+};
+
+async function loadChapter(letter) {
+  if (ICD_CACHE[letter]) return ICD_CACHE[letter];
+  if (ICD_LOADING[letter]) return ICD_LOADING[letter];
+  ICD_LOADING[letter] = fetch(ICD_BASE + 'icd_' + letter + '.json')
+    .then(r => r.json())
+    .then(d => { ICD_CACHE[letter] = d.codes || []; return ICD_CACHE[letter]; })
+    .catch(() => []);
+  return ICD_LOADING[letter];
+}
+
+function matchesQuery(entry, q) {
+  if (entry.code.toLowerCase().includes(q)) return true;
+  if (entry.title.toLowerCase().includes(q)) return true;
+  if (entry.inclusions && entry.inclusions.some(inc => inc.toLowerCase().includes(q))) return true;
+  return false;
+}
+
+let icdSearchTimer = null;
 
 function searchICD(val) {
   const hint    = document.getElementById('icd-hint');
   const results = document.getElementById('icd-results');
-  if (val.length < 2) { hint.style.display='block'; results.innerHTML=''; return; }
+  clearTimeout(icdSearchTimer);
+
+  if (val.length < 2) {
+    hint.style.display = 'block';
+    results.innerHTML = '';
+    return;
+  }
   hint.style.display = 'none';
-  const q = val.toLowerCase();
-  const found = ICD.filter(d =>
-    d.code.toLowerCase().includes(q) ||
-    d.name.toLowerCase().includes(q) ||
-    d.cat.toLowerCase().includes(q) ||
-    (d.syn && d.syn.includes(q))
-  );
-  results.innerHTML = found.length
-    ? found.map(d => `<div class="icd-result" onclick="copyICD('${d.code}')"><div class="icd-code">${d.code}</div><div class="icd-name">${d.name}</div><div class="icd-cat"><span class="tag tag-gold">${d.cat}</span></div></div>`).join('')
-    : '<p style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">Keine Treffer. Anderen Suchbegriff eingeben.</p>';
+
+  // Sofortanzeige: Ladeanzeige
+  results.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 0;text-align:center">🔍 Suche in ICD-10-GM 2026 …</p>';
+
+  icdSearchTimer = setTimeout(async () => {
+    const q = val.trim().toLowerCase();
+    const codeMatch = q.match(/^([a-z])\d/i);
+
+    let chaptersToLoad;
+    if (codeMatch) {
+      // Direktsuche nach Code: nur das passende Kapitel laden
+      chaptersToLoad = [codeMatch[1].toUpperCase()];
+    } else {
+      // Laiensprache-Mapping prüfen
+      const mapped = Object.entries(LAIEN_MAP)
+        .filter(([term]) => term.includes(q) || q.includes(term))
+        .map(([, ch]) => ch);
+      if (mapped.length > 0) {
+        chaptersToLoad = [...new Set(mapped)];
+      } else {
+        // Alle Kapitel laden (werden gecacht)
+        chaptersToLoad = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      }
+    }
+
+    const allCodes = (await Promise.all(chaptersToLoad.map(loadChapter))).flat();
+    const found = allCodes.filter(e => matchesQuery(e, q)).slice(0, 80);
+
+    if (!found.length) {
+      results.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">Keine Treffer in ICD-10-GM 2026.</p>';
+      return;
+    }
+
+    results.innerHTML = found.map(d => {
+      const incs = d.inclusions && d.inclusions.length
+        ? `<div class="icd-inc">↳ ${d.inclusions.slice(0,3).join(' · ')}</div>` : '';
+      const safeCode = d.code.replace(/'/g, "\\'");
+      return `<div class="icd-result" onclick="copyICD('${safeCode}')">
+        <div class="icd-code">${d.code}</div>
+        <div class="icd-name">${d.title}</div>
+        ${incs}
+        <div class="icd-cat"><span class="tag tag-gold">${d.code.charAt(0)}</span></div>
+      </div>`;
+    }).join('');
+  }, 300);
 }
 
 function copyICD(code) {
